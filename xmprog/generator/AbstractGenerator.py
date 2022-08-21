@@ -1,0 +1,3 @@
+class AbstractGenerator():
+
+		pass
