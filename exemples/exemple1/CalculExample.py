@@ -26,6 +26,27 @@ class Referentiel(Example):
 		self.setValue(ref='entier::r', value=3)
 		#_______________________________________________________________________
 		#
+		'''
+REFACTORING: DSL Scenario
+============
+
+Scenario:
+	id: Additionner
+	class: analyse.Scenario
+	participants:
+		u:
+			name: Utilisateur
+		s:
+			name: Système
+	interactions:|
+		@u
+			>s		saisit a et b			(a: int = REF=entier::a,
+												b: int = REF=entier::b)
+		<u
+			>s		clique sur +
+			@s		additionne a et b		@addAtoB
+		<u			affiche r				(r: int = REF=entier::r)
+'''
 		self.setYamlObject('''
 			id: Additionner
 			'@class': analyse.Scenario
@@ -62,6 +83,42 @@ class Referentiel(Example):
 		''')
 		#_______________________________________________________________________
 		#
+		'''
+REFACTORING: DSL Scenario
+============
+
+Scenario:
+	id: Additionner
+	class: conception.Scenario
+	participants:
+		calcEP:
+			class: application.endpoint.CalculEndPoint
+		calcS:
+			class: application.service.CalculService
+	after:
+		addAtoB:
+			operations:|
+				@s
+					>calcS			New()
+				<s 					calculService
+					>calcEP			New(calculService: application.service.CalculService = {{calculService}})
+				<s 					calculEndPoint
+					>calcEP			calculEndPoint.additionner(a: int = REF=entier::a, b: int = REF=entier::b)
+										operations:
+											If not [[paramètres valides: {{a}}, {{b}}]] then:
+												Raise(ServiceException, 'Paramètres invalides: a=%s b=%s',
+													[ '{{a}}', '{{b}}' ])
+
+					@calcEP					Set bUnchanged: int = 0
+					@calcEP					Set bUnchanged = {{b}} + 1 - 1
+
+						>calcS				calculService.additionner(a: int = {{a}}, b: int = {{bUnchanged}} + 0)
+												operations:
+						@calcS 						Return {{a}} + {{b}}
+
+					@calcEP 					Return {{r}}
+				<s 					r
+		'''
 		self.setYamlObject('''
 			id: Additionner
 			'@class': conception.Scenario
