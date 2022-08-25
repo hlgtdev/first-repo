@@ -37,3 +37,7 @@ fi
 
 sudo rm -f /usr/local/bin/xmpg
 sudo ln -s $XMPG_HOME/xmprog/xmprog-runner.py /usr/local/bin/xmpg
+
+git config --global user.name "hlgtdev"
+git config --global user.email ""
+
