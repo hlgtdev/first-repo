@@ -1,0 +1,106 @@
+<script src="./lib/Tone.js"></script>
+<script>
+tempo = 60
+rate = 60 / tempo
+
+synth = new Tone.PolySynth(Tone.Synth).toDestination();
+now = Tone.now()
+
+portee([
+    ], [
+        "C3,G3:0.5",
+        "C3,G3:0.5",
+        "D3,A3:3",
+        
+        "C3,G3:0.5",
+        "C3,G3:0.5",
+        "D3,A3:3",
+        
+        "A#2,F3:0.5",
+        "A#2,F3:0.5",
+        "C3,G3:3",
+        
+        "C3,G3:0.5",
+        "C3,G3:0.5",
+        "D3,A3:3",
+    ])
+
+portee([
+        "r:1.75",
+    ], [
+        "F4:0.5",
+        "E4:0.25",
+        "D4:0.25",
+        "C4:0.25",
+        "A#3:0.5",
+        "A3:1.25",
+        "r:1",
+        
+        "D4:0.5",
+        "E4:0.25",
+        "F4:0.25",
+        "G4:0.25",
+        "A4:0.25",
+        "A#4:0.25",
+        "A4:1",
+        "r:1.25",
+
+        "A4:0.5",
+        "G4:0.25",
+        "F4:0.25",
+        "A4:0.25",
+        "G4:0.25",
+        "F4:0.25",
+        "E4:1",
+        "r:1.25",
+
+        "F4:0.5",
+        "E4:0.25",
+        "D4:0.25",
+        "C4:0.25",
+        "C4:0.25",
+        "D4:0.25",
+        "D4:1",
+        "r:1.25",
+    ])
+
+function portee(accordsBefore, accords) {
+
+    t = 0
+    t = gererAccords(accordsBefore, t)
+
+    for (var n = 0; n < 2; n++) {
+        t = gererAccords(accords, t)
+    }
+}
+
+function gererAccords(accords, t) {
+
+    for(var i in accords) {
+        accord = accords[i]
+        
+        T = accord.split(":")
+        sNotes = T[0]
+        duree = parseFloat(T[1])
+        notes = null
+  
+        if (sNotes == "r") {
+            synth.triggerAttack(notes, t)
+        }
+        else {
+            notes = sNotes.split(",")
+
+            for (var j in notes) {
+                note = notes[j]
+                synth.triggerAttack(note, t)
+            }
+        }
+        t += duree * rate
+        synth.triggerRelease(notes, t);
+
+        console.log(t, notes)
+    }
+    return t
+}
+</script>
+
