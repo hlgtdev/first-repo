@@ -5,110 +5,111 @@ playMusic = true
 tempo = 60
 rate = 60 / tempo
 
-synth = new Tone.PolySynth(Tone.Synth).toDestination();
+function play() {
+  synth = new Tone.PolySynth(Tone.Synth).toDestination();
 
-portee(synth, [
-    ], [
-        "C3,G3:0.5",
-        "C3,G3:0.5",
-        "D3,A3:3",
-        
-        "C3,G3:0.5",
-        "C3,G3:0.5",
-        "D3,A3:3",
-        
-        "A#2,F3:0.5",
-        "A#2,F3:0.5",
-        "C3,G3:3",
-        
-        "C3,G3:0.5",
-        "C3,G3:0.5",
-        "D3,A3:3",
-    ])
+  portee(synth, [
+      ], [
+          "C3,G3:0.5",
+          "C3,G3:0.5",
+          "D3,A3:3",
 
-portee(synth, [
-        "r:1.75",
-    ], [
-        "F4:0.5",
-        "E4:0.25",
-        "D4:0.25",
-        "C4:0.25",
-        "A#3:0.5",
-        "A3:1.25",
-        "r:1",
-        
-        "D4:0.5",
-        "E4:0.25",
-        "F4:0.25",
-        "G4:0.25",
-        "A4:0.25",
-        "A#4:0.25",
-        "A4:1",
-        "r:1.25",
+          "C3,G3:0.5",
+          "C3,G3:0.5",
+          "D3,A3:3",
 
-        "A4:0.5",
-        "G4:0.25",
-        "F4:0.25",
-        "A4:0.25",
-        "G4:0.25",
-        "F4:0.25",
-        "E4:1",
-        "r:1.25",
+          "A#2,F3:0.5",
+          "A#2,F3:0.5",
+          "C3,G3:3",
 
-        "F4:0.5",
-        "E4:0.25",
-        "D4:0.25",
-        "C4:0.25",
-        "C4:0.25",
-        "D4:0.25",
-        "D4:1",
-        "r:1.25",
-    ])
+          "C3,G3:0.5",
+          "C3,G3:0.5",
+          "D3,A3:3",
+      ])
 
-if (playMusic == true)
-    Tone.Transport.start()
- 
+  portee(synth, [
+          "r:1.75",
+      ], [
+          "F4:0.5",
+          "E4:0.25",
+          "D4:0.25",
+          "C4:0.25",
+          "A#3:0.5",
+          "A3:1.25",
+          "r:1",
+
+          "D4:0.5",
+          "E4:0.25",
+          "F4:0.25",
+          "G4:0.25",
+          "A4:0.25",
+          "A#4:0.25",
+          "A4:1",
+          "r:1.25",
+
+          "A4:0.5",
+          "G4:0.25",
+          "F4:0.25",
+          "A4:0.25",
+          "G4:0.25",
+          "F4:0.25",
+          "E4:1",
+          "r:1.25",
+
+          "F4:0.5",
+          "E4:0.25",
+          "D4:0.25",
+          "C4:0.25",
+          "C4:0.25",
+          "D4:0.25",
+          "D4:1",
+          "r:1.25",
+      ])
+
+      Tone.Transport.start()
+}
+
 function portee(synth, accordsBefore, accords) {
 
         at = 0
-        
+
         if (accordsBefore.length > 0) {
             accordsBefore = gererListeAccords(accordsBefore)
-            
+
             nb = accordsBefore.length
             lastTime = accordsBefore[nb - 1][0]
             lastDuree = accordsBefore[nb - 1][1][0]
             at = lastTime + lastDuree
-            
+
 		    prePart = new Tone.Part(((time, chord) => {
 		        duree = chord[0]
 		        chord = chord[1]
 		        console.log(time, duree, chord)
-		        
+
 			    synth.triggerAttackRelease(chord, duree, time);
 		    }), accordsBefore).start(0);
         }
-        
+
         accords = gererListeAccords(accords)
-        
+
         nb = accords.length
         lastTime = accords[nb - 1][0]
         lastDuree = accords[nb - 1][1][0]
-		
+
 		pianoPart = new Tone.Part(((time, chord) => {
 		    duree = chord[0]
 		    chord = chord[1]
 		    console.log(time, duree, chord)
-		    
+
 		    markNotes(chord)
-		    
+
 			synth.triggerAttackRelease(chord, duree, time)
-			
+
 		    setTimeout(unmarkNotes, duree * 1000, chord)
 
 		}), accords).start(at);
 
-        pianoPart.loop = false;
+    pianoPart.loop = true;
 		pianoPart.loopEnd = lastTime + lastDuree;
 		pianoPart.humanize = true;
 }
@@ -120,12 +121,12 @@ function gererListeAccords(accords) {
 
     for(var i in accords) {
         accord = accords[i]
-        
+
         T = accord.split(":")
         sNotes = T[0]
         duree = parseFloat(T[1])
         notes = null
-  
+
         if (sNotes != "r") {
             notes = sNotes.split(",")
         }
@@ -143,35 +144,45 @@ function loadKeyboard() {
 
     doc = ''
     doc += '<link rel="stylesheet" href="css/piano.css" />'
+    doc += '<input type="button" value="Play"></input>'
     doc += '<div class="keys">'
-    
+
     for (var i = 0; i < 53; i++) {
         rang = i % 12
         octave = 1 + Math.floor(i / 12)
         sharp = gamme[rang].indexOf('#') > -1 ? ' sharp' : ''
         offset = -127.3 + i * 4.9
         sharpStyle = gamme[rang].indexOf('#') > -1 ? ' style="margin-right: ' + offset + 'rem;"' : ''
-        
+
         doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '></div>'
     }
     doc += '</div>'
-    
+
     document.write(doc)
+
+    console.log('!!!', document.querySelector('input'))
+    //attach a click listener to a play button
+    document.querySelector('input')?.addEventListener('click', async () => {
+    	await Tone.start()
+    	console.log('audio is ready')
+
+      play()
+    })
 }
 
 function markNotes(notes) {
 
     console.log(">>> MARK:", notes)
-    
+
     for (var i in notes) {
         note = notes[i]
-        
+
         if (note == null)
             continue
         console.log(note, document.getElementById(note))
 
         document.getElementById(note).class = 'playing'
-    }   
+    }
 }
 
 function unmarkNotes(notes) {
@@ -183,10 +194,9 @@ function unmarkNotes(notes) {
 
         if (note == null)
             continue
-            
+
         //document.getElementById(note).style.color = 'black'
-    }   
+    }
 }
 </script>
 <body onload="loadKeyboard()">
-
