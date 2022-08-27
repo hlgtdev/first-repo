@@ -1,12 +1,13 @@
+<link rel="stylesheet" href="css/piano.css" />
 <script src="./lib/Tone.js"></script>
 <script>
+playMusic = true
 tempo = 60
 rate = 60 / tempo
 
 synth = new Tone.PolySynth(Tone.Synth).toDestination();
-now = Tone.now()
 
-portee([
+portee(synth, [
     ], [
         "C3,G3:0.5",
         "C3,G3:0.5",
@@ -25,7 +26,7 @@ portee([
         "D3,A3:3",
     ])
 
-portee([
+portee(synth, [
         "r:1.75",
     ], [
         "F4:0.5",
@@ -64,17 +65,58 @@ portee([
         "r:1.25",
     ])
 
-function portee(accordsBefore, accords) {
+if (playMusic == true)
+    Tone.Transport.start()
+ 
+function portee(synth, accordsBefore, accords) {
 
-    t = 0
-    t = gererAccords(accordsBefore, t)
+        at = 0
+        
+        if (accordsBefore.length > 0) {
+            accordsBefore = gererListeAccords(accordsBefore)
+            
+            nb = accordsBefore.length
+            lastTime = accordsBefore[nb - 1][0]
+            lastDuree = accordsBefore[nb - 1][1][0]
+            at = lastTime + lastDuree
+            
+		    prePart = new Tone.Part(((time, chord) => {
+		        duree = chord[0]
+		        chord = chord[1]
+		        console.log(time, duree, chord)
+		        
+			    synth.triggerAttackRelease(chord, duree, time);
+		    }), accordsBefore).start(0);
+        }
+        
+        accords = gererListeAccords(accords)
+        
+        nb = accords.length
+        lastTime = accords[nb - 1][0]
+        lastDuree = accords[nb - 1][1][0]
+		
+		pianoPart = new Tone.Part(((time, chord) => {
+		    duree = chord[0]
+		    chord = chord[1]
+		    console.log(time, duree, chord)
+		    
+		    markNotes(chord)
+		    
+			synth.triggerAttackRelease(chord, duree, time)
+			
+		    setTimeout(unmarkNotes, duree * 1000, chord)
 
-    for (var n = 0; n < 2; n++) {
-        t = gererAccords(accords, t)
-    }
+		}), accords).start(at);
+
+        pianoPart.loop = false;
+		pianoPart.loopEnd = lastTime + lastDuree;
+		pianoPart.humanize = true;
 }
 
-function gererAccords(accords, t) {
+function gererListeAccords(accords) {
+
+    t = 0
+    liste = []
 
     for(var i in accords) {
         accord = accords[i]
@@ -84,23 +126,67 @@ function gererAccords(accords, t) {
         duree = parseFloat(T[1])
         notes = null
   
-        if (sNotes == "r") {
-            synth.triggerAttack(notes, t)
-        }
-        else {
+        if (sNotes != "r") {
             notes = sNotes.split(",")
-
-            for (var j in notes) {
-                note = notes[j]
-                synth.triggerAttack(note, t)
-            }
         }
+        liste.push([t, [ duree * rate, notes]])
         t += duree * rate
-        synth.triggerRelease(notes, t);
 
         console.log(t, notes)
     }
-    return t
+    return liste
+}
+
+function loadKeyboard() {
+
+    gamme = [ 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B' ]
+
+    doc = ''
+    doc += '<link rel="stylesheet" href="css/piano.css" />'
+    doc += '<div class="keys">'
+    
+    for (var i = 0; i < 53; i++) {
+        rang = i % 12
+        octave = 1 + Math.floor(i / 12)
+        sharp = gamme[rang].indexOf('#') > -1 ? ' sharp' : ''
+        offset = -127.3 + i * 4.9
+        sharpStyle = gamme[rang].indexOf('#') > -1 ? ' style="margin-right: ' + offset + 'rem;"' : ''
+        
+        doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '></div>'
+    }
+    doc += '</div>'
+    
+    document.write(doc)
+}
+
+function markNotes(notes) {
+
+    console.log(">>> MARK:", notes)
+    
+    for (var i in notes) {
+        note = notes[i]
+        
+        if (note == null)
+            continue
+        console.log(note, document.getElementById(note))
+
+        document.getElementById(note).class = 'playing'
+    }   
+}
+
+function unmarkNotes(notes) {
+
+    console.log(">>> UNMARK:", notes)
+
+    for (var i in notes) {
+        note = notes[i]
+
+        if (note == null)
+            continue
+            
+        //document.getElementById(note).style.color = 'black'
+    }   
 }
 </script>
+<body onload="loadKeyboard()">
 
