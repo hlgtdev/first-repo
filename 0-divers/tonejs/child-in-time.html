@@ -90,6 +90,9 @@ function portee(synth, accordsBefore, accords) {
 		        chord = chord[1]
 		        console.log(time, duree, chord)
 
+            markNotes(chord)
+            setTimeout(unmarkNotes, duree * 1000, chord)
+
 			    synth.triggerAttackRelease(chord, duree, time);
 		    }), accordsBefore).start(0);
         }
@@ -106,10 +109,9 @@ function portee(synth, accordsBefore, accords) {
 		    console.log(time, duree, chord)
 
 		    markNotes(chord)
+        setTimeout(unmarkNotes, duree * 1000, chord)
 
 			synth.triggerAttackRelease(chord, duree, time)
-
-		    setTimeout(unmarkNotes, duree * 1000, chord)
 
 		}), accords).start(at);
 
@@ -154,7 +156,7 @@ function loadKeyboard() {
         rang = i % 12
         octave = 1 + Math.floor(i / 12)
         sharp = gamme[rang].indexOf('#') > -1 ? ' sharp' : ''
-        offset = -127.3 + i * 4.9
+        offset = +127.3 - i * 4.9
         sharpStyle = gamme[rang].indexOf('#') > -1 ? ' style="margin-right: ' + offset + 'rem;"' : ''
 
         doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '>' + gamme[rang] + octave + '</div>'
@@ -184,11 +186,17 @@ function markNotes(notes) {
   for (var i in notes) {
       note = notes[i]
 
-      if (note == null)
-        console.log(note, document.getElementById(note))
+      if (note == null) {
+        continue
+      }
 
-        document.getElementById(note).style.borderStyle = 'solid'
-        document.getElementById(note).style.borderColor = 'red'
+      if (note.indexOf('#') > -1) {
+        console.log('>>>', document.getElementById(note).innerText)
+      }
+
+      key = document.getElementById(note)
+      key.style.borderStyle = 'solid'
+      key.style.borderColor = 'red'
     }
 }
 
@@ -199,10 +207,13 @@ function unmarkNotes(notes) {
     for (var i in notes) {
         note = notes[i]
 
-        if (note == null)
-            continue
+        if (note == null) {
+          console.log(note, document.getElementById(note))
+          continue
+        }
 
-            document.getElementById(note).style.borderStyle = 'none'
+        key = document.getElementById(note)
+        key.style.borderStyle = 'none'
     }
 }
 </script>
