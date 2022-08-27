@@ -1,12 +1,16 @@
 <link rel="stylesheet" href="css/piano.css" />
 <script src="./lib/Tone.js"></script>
 <script>
+isPlaying = false
 playMusic = true
 tempo = 60
 rate = 60 / tempo
 
+synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
 function play() {
-  synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+  isPlaying = true
 
   portee(synth, [
       ], [
@@ -144,7 +148,6 @@ function loadKeyboard() {
 
     doc = ''
     doc += '<link rel="stylesheet" href="css/piano.css" />'
-    doc += '<input type="button" value="Play"></input>'
     doc += '<div class="keys">'
 
     for (var i = 0; i < 53; i++) {
@@ -154,15 +157,19 @@ function loadKeyboard() {
         offset = -127.3 + i * 4.9
         sharpStyle = gamme[rang].indexOf('#') > -1 ? ' style="margin-right: ' + offset + 'rem;"' : ''
 
-        doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '></div>'
+        doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '>' + gamme[rang] + octave + '</div>'
     }
     doc += '</div>'
 
     document.write(doc)
 
-    console.log('!!!', document.querySelector('input'))
     //attach a click listener to a play button
-    document.querySelector('input')?.addEventListener('click', async () => {
+    document.querySelector('div')?.addEventListener('click', async () => {
+
+      if (isPlaying == true) {
+        return
+      }
+
     	await Tone.start()
     	console.log('audio is ready')
 
@@ -172,16 +179,16 @@ function loadKeyboard() {
 
 function markNotes(notes) {
 
-    console.log(">>> MARK:", notes)
+  console.log(">>> MARK:", notes)
 
-    for (var i in notes) {
-        note = notes[i]
+  for (var i in notes) {
+      note = notes[i]
 
-        if (note == null)
-            continue
+      if (note == null)
         console.log(note, document.getElementById(note))
 
-        document.getElementById(note).class = 'playing'
+        document.getElementById(note).style.borderStyle = 'solid'
+        document.getElementById(note).style.borderColor = 'red'
     }
 }
 
@@ -195,7 +202,7 @@ function unmarkNotes(notes) {
         if (note == null)
             continue
 
-        //document.getElementById(note).style.color = 'black'
+            document.getElementById(note).style.borderStyle = 'none'
     }
 }
 </script>
