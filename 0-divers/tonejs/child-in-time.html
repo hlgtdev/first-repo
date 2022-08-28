@@ -5,6 +5,7 @@ isPlaying = false
 playMusic = true
 tempo = 60
 rate = 60 / tempo
+kTimeout = 850
 
 synth = new Tone.PolySynth(Tone.Synth).toDestination();
 
@@ -12,7 +13,7 @@ function play() {
 
   isPlaying = true
 
-  portee(synth, [
+  portee(synth, -1, [
       ], [
           "C3,G3:0.5",
           "C3,G3:0.5",
@@ -31,7 +32,7 @@ function play() {
           "D3,A3:3",
       ])
 
-  portee(synth, [
+  portee(synth, 0, [
           "r:1.75",
       ], [
           "F4:0.5",
@@ -73,12 +74,12 @@ function play() {
       Tone.Transport.start()
 }
 
-function portee(synth, accordsBefore, accords) {
+function portee(synth, octaveOffsetShown, accordsBefore, accords) {
 
         at = 0
 
         if (accordsBefore.length > 0) {
-            accordsBefore = gererListeAccords(accordsBefore)
+            accordsBefore = gererListeAccords(octaveOffsetShown, accordsBefore)
 
             nb = accordsBefore.length
             lastTime = accordsBefore[nb - 1][0]
@@ -87,17 +88,19 @@ function portee(synth, accordsBefore, accords) {
 
 		    prePart = new Tone.Part(((time, chord) => {
 		        duree = chord[0]
+            octaveOffsetShown = chord[2]
 		        chord = chord[1]
 		        console.log(time, duree, chord)
 
-            markNotes(chord)
-            setTimeout(unmarkNotes, duree * 1000, chord)
+            markNotes(chord, octaveOffsetShown)
 
 			    synth.triggerAttackRelease(chord, duree, time);
+
+          setTimeout(unmarkNotes, duree * kTimeout, chord, octaveOffsetShown)
 		    }), accordsBefore).start(0);
         }
 
-        accords = gererListeAccords(accords)
+        accords = gererListeAccords(octaveOffsetShown, accords)
 
         nb = accords.length
         lastTime = accords[nb - 1][0]
@@ -105,14 +108,15 @@ function portee(synth, accordsBefore, accords) {
 
 		pianoPart = new Tone.Part(((time, chord) => {
 		    duree = chord[0]
+        octaveOffsetShown = chord[2]
 		    chord = chord[1]
 		    console.log(time, duree, chord)
 
-		    markNotes(chord)
-        setTimeout(unmarkNotes, duree * 1000, chord)
+		    markNotes(chord, octaveOffsetShown)
 
 			synth.triggerAttackRelease(chord, duree, time)
 
+      setTimeout(unmarkNotes, duree * kTimeout, chord, octaveOffsetShown)
 		}), accords).start(at);
 
     pianoPart.loop = true;
@@ -120,7 +124,7 @@ function portee(synth, accordsBefore, accords) {
 		pianoPart.humanize = true;
 }
 
-function gererListeAccords(accords) {
+function gererListeAccords(octaveOffsetShown, accords) {
 
     t = 0
     liste = []
@@ -136,7 +140,7 @@ function gererListeAccords(accords) {
         if (sNotes != "r") {
             notes = sNotes.split(",")
         }
-        liste.push([t, [ duree * rate, notes]])
+        liste.push([t, [ duree * rate, notes, octaveOffsetShown ]])
         t += duree * rate
 
         console.log(t, notes)
@@ -150,6 +154,9 @@ function loadKeyboard() {
 
     doc = ''
     doc += '<link rel="stylesheet" href="css/piano.css" />'
+    doc += '<h1>Child in time (Deep Purple)</h1>'
+    doc += '<h2>Intro</h2>'
+    doc += '<p>Appuyer sur une touche du piano pour démarrer</p>'
     doc += '<div class="keys">'
 
     for (var i = 0; i < 53; i++) {
@@ -159,7 +166,7 @@ function loadKeyboard() {
         offset = +127.3 - i * 4.9
         sharpStyle = gamme[rang].indexOf('#') > -1 ? ' style="margin-right: ' + offset + 'rem;"' : ''
 
-        doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '>' + gamme[rang] + octave + '</div>'
+        doc += '<div id="' + gamme[rang] + octave + '" class="key' + sharp + '"' + sharpStyle + '></div>'
     }
     doc += '</div>'
 
@@ -179,7 +186,7 @@ function loadKeyboard() {
     })
 }
 
-function markNotes(notes) {
+function markNotes(notes, octaveOffsetShown) {
 
   console.log(">>> MARK:", notes)
 
@@ -190,9 +197,9 @@ function markNotes(notes) {
         continue
       }
 
-      if (note.indexOf('#') > -1) {
-        console.log('>>>', document.getElementById(note).innerText)
-      }
+      noteSansOctave = note.substring(0, note.length - 1)
+      octave = parseInt(note.substring(note.length - 1, note.length))
+      note = noteSansOctave + (octave + octaveOffsetShown)
 
       key = document.getElementById(note)
       key.style.borderStyle = 'solid'
@@ -200,7 +207,7 @@ function markNotes(notes) {
     }
 }
 
-function unmarkNotes(notes) {
+function unmarkNotes(notes, octaveOffsetShown) {
 
     console.log(">>> UNMARK:", notes)
 
@@ -208,12 +215,25 @@ function unmarkNotes(notes) {
         note = notes[i]
 
         if (note == null) {
-          console.log(note, document.getElementById(note))
           continue
         }
 
+        noteSansOctave = note.substring(0, note.length - 1)
+        octave = parseInt(note.substring(note.length - 1, note.length))
+        note = noteSansOctave + (octave + octaveOffsetShown)
+
         key = document.getElementById(note)
-        key.style.borderStyle = 'none'
+
+        if (note.indexOf('#') > -1) {
+          key.style.borderStyle = 'solid'
+          key.style.borderTopColor = '#666666'
+          key.style.borderRightColor = '#222222'
+          key.style.borderBottomColor = '#111111'
+          key.style.borderLeftColor = '#555555'
+        }
+        else {
+          key.style.borderStyle = 'none'
+        }
     }
 }
 </script>
