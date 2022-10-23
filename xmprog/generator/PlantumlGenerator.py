@@ -76,13 +76,24 @@ class PlantumlGenerator(AbstractGenerator):
 			isAbstract	= example.getValue(modelClass, './@abstract')
 			classId		= example.getValue(modelClass, './id')
 			className	= example.getValue(modelClass, './name')
+			restPath	= example.getValue(modelClass, './rest/path', default=None)
 			attributes	= example.getValue(modelClass, './attributes')
 			relations	= example.getValue(modelClass, './relations')
 			methods		= example.getValue(modelClass, './methods')
 
 			abstract	= '' if isAbstract is False else 'abstract '
 			shortClassExtends = classExtends[ classExtends.rindex('.') + 1 : ] if classExtends is not None and '.' in classExtends else classExtends
-			stereotype	= '' if classExtends is None else '<<%s>>' % shortClassExtends
+			stereotype = ''
+
+			if classExtends is not None:
+				stereotype += '%s' % shortClassExtends
+
+			if restPath is not None:
+				stereotype += 'REST: ' if stereotype == '' else ': '
+				stereotype += '**%s**' % restPath
+
+			if stereotype != '':
+				stereotype = '<<%s>>' % stereotype
 
 			lines.append("' CLASSE: %s" % className)
 			lines.append('')
@@ -105,11 +116,17 @@ class PlantumlGenerator(AbstractGenerator):
 			for method in sorted(methods, key=lambda meth: meth['id']):
 				methodId = example.getValue(method, './id')
 
+				rest = example.getValue(method, './rest')
 				methodIsStatic = example.getValue(method, './static')
+				typ = example.getValue(method, './type')
 
+				restMethodAndPath = '' if rest is None else '//<<REST>> **%s %s**//\\n' % (
+					example.getValue(rest, './method'),
+					example.getValue(rest, './path'))
 				modifiers = '//<<static>>// ' if methodIsStatic is True else ''
+				methodType = '' if typ is None else ': %s' % typ
 
-				lines.append('%s : + %s%s' % (classId, modifiers, methodId))
+				lines.append('%s : + %s%s%s%s' % (classId, restMethodAndPath, modifiers, methodId, methodType))
 
 			if len(methods) > 0:
 				lines.append('')

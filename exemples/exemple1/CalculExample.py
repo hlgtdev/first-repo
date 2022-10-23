@@ -19,6 +19,8 @@ class Referentiel(Example):
 	def define(self):
 
 		self.useClassPrefix(True)
+
+		# self.setRootPackage('application')
 		#_______________________________________________________________________
 		#
 		self.setValue(ref='entier::a', value=1)
@@ -125,6 +127,8 @@ Scenario:
 			extend: REF=analyse.Scenario::Additionner
 			participants:
 				calcEP:
+					rest:
+						path : /calcul
 					class: application.endpoint.CalculEndPoint
 				calcS:
 					class: application.service.CalculService
@@ -145,7 +149,11 @@ Scenario:
 							participant: calcEP
 							instance: calculEndPoint
 							returnedVar: r
+							rest:
+								method : GET
+								path : /addition?a={a}&b={b}
 							method: additionner
+							type: int
 							parameters:
 								a:
 									type: int
@@ -173,6 +181,7 @@ Scenario:
 									instance: this.calculService
 									returnedVar: r
 									method: additionner
+									type: int
 									parameters:
 										a:
 											type: int

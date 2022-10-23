@@ -43,7 +43,7 @@ class ClassGenerator(AbstractGenerator):
 
 		# Ajout de l'entrée /name pour les participants
 
-		participants = example.findAll(select='.+/participants/.+/', where='/participants')
+		participants = example.findAll(select='.+/participants/.+?/', where='/participants')
 
 		for accessor, participant in participants.items():
 			newPart = { 'name' : accessor[ accessor.rindex('/') + 1 : ] }
@@ -69,6 +69,9 @@ class ClassGenerator(AbstractGenerator):
 		meths = example.findAll(select='.+/', where='operations/.+/method ')
 
 		for methAccessor, meth in meths.items():
+			if methAccessor.endswith('/rest'):
+				continue
+
 			participant = example.getValue(meth, './participant')
 			method = example.getValue(meth, './method')
 			parameters = example.getValue(meth, './parameters', default={})
@@ -267,6 +270,7 @@ class ClassGenerator(AbstractGenerator):
 			for name, participant in participants.items():
 				classe = example.getValue(participant, './class')
 				ref = example.getValue('generation.model.Class::%s' % classe, default=None)
+				rest = example.getValue(participant, './rest', default=None)
 
 				if ref is None:
 					p = classe.rindex('.')
@@ -279,10 +283,13 @@ class ClassGenerator(AbstractGenerator):
 							'id' 			: classe,
 							'name'          : className,
 							'package'       : package,
+							'rest'       	: rest,
 							'attributes'    : [],
 							'relations'     : [],
 							'methods'       : [],
 						})
+				else:
+					example.setValue(ref, './rest', value=rest)
 
 			# Pour chaque opération
 
@@ -306,7 +313,9 @@ class ClassGenerator(AbstractGenerator):
 					operationClass	= example.getValue(participants, './%s/class' % participant)
 					operationClassName	= operationClass[ operationClass.rindex('.') + 1 : ]
 					instance        = example.getValue(operation, '?/instance', default=participant)
+					rest		    = example.getValue(operation, '?/rest', default=None)
 					method          = example.getValue(operation, '?/method', default=operationClassName)
+					typ          	= example.getValue(operation, '?/type', default=None)
 					isConstructor   = example.getValue(operation, '?/isConstructor', default=method == operationClassName)
 					parameters      = example.getValue(operation, '?/parameters', default={})
 
@@ -360,7 +369,9 @@ class ClassGenerator(AbstractGenerator):
 					example.setValue(objMethods, './%d/id' % nbMethods, methodId)
 					example.setValue(objMethods, './%d/static' % nbMethods, isStatic)
 					example.setValue(objMethods, './%d/isConstructor' % nbMethods, isConstructor)
+					example.setValue(objMethods, './%d/rest' % nbMethods, rest)
 					example.setValue(objMethods, './%d/name' % nbMethods, method)
+					example.setValue(objMethods, './%d/type' % nbMethods, typ)
 
 					for name, parameter in parameters.items():
 						typ = example.getValue(parameter, './type')
