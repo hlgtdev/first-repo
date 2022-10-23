@@ -17,7 +17,7 @@ import importlib
 import re
 
 import curses
-import readchar
+import getch
 
 from Example import *
 #_______________________________________________________________________________
@@ -164,7 +164,7 @@ class Screen(object):
 			if ref is not None:
 				referentiel.showValue(ref, showEmpty=self.showEmptyValues)
 				print('Appuyez sur une touche pour continuer...', end='%s%s' % ('\r', 5 * '\t'))
-				c = readchar.readkey()
+				c = getch.getch()
 
 				if c == 'q':
 					print()
