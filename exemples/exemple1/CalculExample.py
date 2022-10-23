@@ -205,6 +205,13 @@ Scenario:
 			Generator.generate(self, dryRun=dryRun)
 
 			self.showValue(showEmpty=False)
+	#___________________________________________________________________________
+	#
+	def pumlReplacements(self):
+
+		return {
+#				': int' : ': Integer',
+			}
 #_______________________________________________________________________________
 #
 if not isImported:

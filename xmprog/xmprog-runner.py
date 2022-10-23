@@ -61,9 +61,14 @@ for (path, dirs, files) in os.walk(currentDir, topdown=False):
 		if hasattr(module.Referentiel, 'process'):
 			module.Referentiel.process(referentiel)
 
+		pumlReplacements = {}
+
+		if hasattr(module.Referentiel, 'pumlReplacements'):
+			pumlReplacements = module.Referentiel.pumlReplacements(referentiel)
+
 os.chdir(currentDir)
 
-Generator.generate(referentiel, dryRun=dryRun)
+Generator.generate(referentiel, dryRun=dryRun, pumlReplacements=pumlReplacements)
 #_______________________________________________________________________________
 #
 import curses

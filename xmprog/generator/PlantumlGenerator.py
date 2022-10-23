@@ -31,7 +31,7 @@ class PlantumlGenerator(AbstractGenerator):
 	#___________________________________________________________________________
 	#
 	@classmethod
-	def generate(cls, example, dryRun=False):
+	def generate(cls, example, dryRun=False, pumlReplacements={}):
 
 		cls.reset()
 
@@ -44,7 +44,7 @@ class PlantumlGenerator(AbstractGenerator):
 		lines.extend(cls.generateDesign(example, fileradical))
 
 		if dryRun is False:
-			cls.generatePlantuml(lines, outputDir, fileradical)
+			cls.generatePlantuml(lines, outputDir, fileradical, pumlReplacements)
 
 		cls.reset()
 	#___________________________________________________________________________
@@ -619,7 +619,7 @@ class PlantumlGenerator(AbstractGenerator):
 	#___________________________________________________________________________
 	#
 	@classmethod
-	def generatePlantuml(cls, lines, outputDir, fileradical):
+	def generatePlantuml(cls, lines, outputDir, fileradical, pumlReplacements):
 
 		existsDir = os.path.exists(outputDir)
 
@@ -629,6 +629,9 @@ class PlantumlGenerator(AbstractGenerator):
 
 		filename = '%s/%s.puml' % (outputDir, fileradical)
 		source = '%s\n' % '\n'.join(lines)
+
+		for src, dest in pumlReplacements.items():
+			source = source.replace(src, dest)
 
 		with open(filename, 'w') as f:
 			f.write(source)
